@@ -145,28 +145,35 @@ fn search_path(
         .unwrap_or(sum)
 }
 
+#[derive(Constructor)]
+struct Visitor {
+    node_id: i32,
+    minutes_left: usize,
+    sum: usize,
+}
+
 fn search_path_p2(
     valves: &mut HashMap<i32, Valve>,
-    you: i32,
-    elephant: i32,
-    minutes_left_you: usize,
-    minutes_left_elephant: usize,
-    sum_you: usize,
-    sum_elephant: usize,
+    you: &Visitor,
+    elephant: &Visitor,
+    flow_rate_left: i32,
 ) -> (usize, usize) {
-    let flow_rate_left: i32 = valves.iter().map(|(_, valve)| valve.flow_rate).sum();
     if flow_rate_left == 0 {
-        return (sum_you, sum_elephant);
+        return (you.sum, elephant.sum);
     }
 
-    let potential_you = evaluate_paths(paths_for_node(valves, you), valves, minutes_left_you);
-    let potential_elephant = evaluate_paths(
-        paths_for_node(valves, elephant),
+    let potential_you = evaluate_paths(
+        paths_for_node(valves, you.node_id),
         valves,
-        minutes_left_elephant,
+        you.minutes_left,
+    );
+    let potential_elephant = evaluate_paths(
+        paths_for_node(valves, elephant.node_id),
+        valves,
+        elephant.minutes_left,
     );
 
-    let mut sum_max = (sum_you, sum_elephant);
+    let mut sum_max = (you.sum, elephant.sum);
     if potential_you.is_empty() && potential_elephant.is_empty() {
         //
     } else if potential_you.is_empty() {
@@ -178,11 +185,12 @@ fn search_path_p2(
             let r = search_path_p2(
                 valves,
                 you,
-                pp_elephant.last_node,
-                minutes_left_you,
-                minutes_left_elephant - pp_elephant.len,
-                sum_you,
-                sum_elephant + pp_elephant.score,
+                &Visitor::new(
+                    pp_elephant.last_node,
+                    elephant.minutes_left - pp_elephant.len,
+                    elephant.sum + pp_elephant.score,
+                ),
+                flow_rate_left - flow_rate_backup_elephant,
             );
             if r.0 + r.1 > sum_max.0 + sum_max.1 {
                 sum_max = r;
@@ -198,12 +206,13 @@ fn search_path_p2(
 
             let r = search_path_p2(
                 valves,
-                pp_you.last_node,
+                &Visitor::new(
+                    pp_you.last_node,
+                    you.minutes_left - pp_you.len,
+                    you.sum + pp_you.score,
+                ),
                 elephant,
-                minutes_left_you - pp_you.len,
-                minutes_left_elephant,
-                sum_you + pp_you.score,
-                sum_elephant,
+                flow_rate_left - flow_rate_backup_you,
             );
             if r.0 + r.1 > sum_max.0 + sum_max.1 {
                 sum_max = r;
@@ -231,12 +240,17 @@ fn search_path_p2(
 
                 let r = search_path_p2(
                     valves,
-                    pp_you.last_node,
-                    pp_elephant.last_node,
-                    minutes_left_you - pp_you.len,
-                    minutes_left_elephant - pp_elephant.len,
-                    sum_you + pp_you.score,
-                    sum_elephant + pp_elephant.score,
+                    &Visitor::new(
+                        pp_you.last_node,
+                        you.minutes_left - pp_you.len,
+                        you.sum + pp_you.score,
+                    ),
+                    &Visitor::new(
+                        pp_elephant.last_node,
+                        elephant.minutes_left - pp_elephant.len,
+                        elephant.sum + pp_elephant.score,
+                    ),
+                    flow_rate_left - flow_rate_backup_elephant - flow_rate_backup_you,
                 );
                 if r.0 + r.1 > sum_max.0 + sum_max.1 {
                     sum_max = r;
@@ -265,14 +279,12 @@ fn solution(filename: &str) -> (usize, usize) {
     let p1 = search_path(&mut valves, node_name_to_i32("AA"), 30, 0);
     println!("day16 p1: {p1}");
 
+    let flow_rate_left = valves.values().map(|valve| valve.flow_rate).sum();
     let p2 = search_path_p2(
         &mut valves,
-        node_name_to_i32("AA"),
-        node_name_to_i32("AA"),
-        26,
-        26,
-        0,
-        0,
+        &Visitor::new(node_name_to_i32("AA"), 26, 0),
+        &Visitor::new(node_name_to_i32("AA"), 26, 0),
+        flow_rate_left,
     );
     println!("day16 p2: {}", p2.0 + p2.1);
     (p1, p2.0 + p2.1)
