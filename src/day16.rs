@@ -320,12 +320,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_run_sample() {
-        assert_eq!(solution("src/inputs/aoc_16_sample.input"), (1651, 1707));
-    }
-
-    #[test]
     fn test_run() {
+        assert_eq!(solution("src/inputs/aoc_16_sample.input"), (1651, 1707));
         assert_eq!(solution("src/inputs/aoc_16.input"), (1873, 2425));
     }
 }
