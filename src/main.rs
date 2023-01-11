@@ -63,12 +63,12 @@ fn main() {
         .parse::<usize>()
         .unwrap_or(0);
     match day {
-        1..=25 => days[day-1](),
+        1..=25 => days[day - 1](),
         _ => days.iter().for_each(|day| {
             let now = Instant::now();
             day();
             println!("execution time: {:?}", now.elapsed());
-    }),
+        }),
     }
     println!("total execution time: {:?}", now.elapsed());
 }
