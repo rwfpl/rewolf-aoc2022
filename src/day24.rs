@@ -85,7 +85,9 @@ impl Add<(i32, i32)> for Pos {
 
 #[derive(Debug, Constructor, Clone, PartialEq, Eq)]
 struct Map {
-    grid: Vec<Vec<Tile>>,
+    grid: Vec<Tile>,
+    width: usize,
+    height: usize,
 }
 
 impl From<&str> for Map {
@@ -93,67 +95,85 @@ impl From<&str> for Map {
         Self {
             grid: s
                 .lines()
-                .map(|l| l.chars().map(Tile::from).collect::<Vec<Tile>>())
-                .collect::<Vec<Vec<Tile>>>(),
+                .flat_map(|l| l.chars().map(Tile::from).collect::<Vec<Tile>>())
+                .collect::<Vec<Tile>>(),
+            width: s.lines().next().unwrap().len(),
+            height: s.lines().count(),
         }
     }
 }
 
 impl Map {
+    fn index_to_pos(&self, index: usize) -> Pos {
+        Pos {
+            x: index % self.width,
+            y: index / self.width,
+        }
+    }
+
+    fn pos_to_index(&self, x: usize, y: usize) -> usize {
+        y * self.width + x
+    }
+
+    fn get_tile(&self, x: usize, y: usize) -> &Tile {
+        &self.grid[self.pos_to_index(x, y)]
+    }
+
+    fn get_tile_mut(&mut self, x: usize, y: usize) -> &mut Tile {
+        let index = self.pos_to_index(x, y);
+        self.grid.get_mut(index).unwrap()
+    }
+
     fn reset(&mut self) {
-        for row in &mut self.grid {
-            for tile in &mut row.iter_mut() {
-                if tile != &Tile::Wall {
-                    *tile = Tile::Empty;
-                }
+        for tile in &mut self.grid {
+            if tile != &Tile::Wall {
+                *tile = Tile::Empty;
             }
         }
     }
 
     fn get_entrance(&self) -> Pos {
-        Pos::new(
+        self.index_to_pos(
             self.grid
-                .first()
-                .unwrap()
                 .iter()
                 .enumerate()
                 .find(|(_, t)| t == &&Tile::Empty)
                 .unwrap()
                 .0,
-            0,
         )
     }
 
     fn get_exit(&self) -> Pos {
-        Pos::new(
+        self.index_to_pos(
             self.grid
-                .last()
-                .unwrap()
                 .iter()
                 .enumerate()
+                .rev()
                 .find(|(_, t)| t == &&Tile::Empty)
                 .unwrap()
                 .0,
-            self.grid.len() - 1,
         )
     }
 
     #[allow(dead_code)]
     fn print(&self) {
-        self.grid.iter().for_each(|row| {
-            row.iter().for_each(|t| print!("{}", char::from(t)));
-            println!();
+        self.grid.iter().enumerate().for_each(|(i, t)| {
+            if i % self.width == 0 {
+                println!();
+            }
+            print!("{}", char::from(t));
         });
+        println!();
     }
 
     fn blizzard_can_move(&self, p: &Pos, d: &Direction) -> Pos {
-        match self.grid[p.y][p.x] {
+        match self.get_tile(p.x, p.y) {
             Tile::Empty => *p,
             Tile::Blizzard(_) => *p,
             Tile::Wall => match d {
                 Direction::Down => Pos::new(p.x, 1),
-                Direction::Up => Pos::new(p.x, self.grid.len() - 2),
-                Direction::Left => Pos::new(self.grid[p.y].len() - 2, p.y),
+                Direction::Up => Pos::new(p.x, self.height - 2),
+                Direction::Left => Pos::new(self.width - 2, p.y),
                 Direction::Right => Pos::new(1, p.y),
             },
         }
@@ -173,7 +193,9 @@ impl Map {
             .iter()
             .map(|v| p.add(*v))
             .filter(|np| {
-                np.is_some_and(|np| np.y != self.grid.len() && self.grid[np.y][np.x] == Tile::Empty)
+                np.is_some_and(|np| {
+                    np.y != self.height && self.get_tile(np.x, np.y) == &Tile::Empty
+                })
             })
             .map(|np| np.unwrap())
             .collect()
@@ -201,22 +223,20 @@ impl Game {
     }
 
     fn advance_blizzards(map: &mut Map, scratch_map: &mut Map) {
-        map.grid.iter().enumerate().for_each(|(y, row)| {
-            row.iter().enumerate().for_each(|(x, t)| {
-                if let Tile::Blizzard(dirs) = t {
-                    dirs.iter().for_each(|d| {
-                        let new_pos = map.advance_blizzard(&Pos::new(x, y), d);
-                        if let Tile::Blizzard(b) =
-                            scratch_map.grid[new_pos.y].get_mut(new_pos.x).unwrap()
-                        {
-                            b.push(*d);
-                        } else {
-                            scratch_map.grid[new_pos.y][new_pos.x] =
-                                Tile::Blizzard(smallvec![*d; 1]);
-                        }
-                    });
-                }
-            })
+        map.grid.iter().enumerate().for_each(|(index, t)| {
+            if let Tile::Blizzard(dirs) = t {
+                dirs.iter().for_each(|d| {
+                    let p = map.index_to_pos(index);
+                    let new_pos = map.advance_blizzard(&p, d);
+                    if let Tile::Blizzard(b) = scratch_map.get_tile_mut(new_pos.x, new_pos.y)
+                    {
+                        b.push(*d);
+                    } else {
+                        *scratch_map.get_tile_mut(new_pos.x, new_pos.y) =
+                            Tile::Blizzard(smallvec![*d; 1]);
+                    }
+                });
+            }
         });
         std::mem::swap(map, scratch_map);
         scratch_map.reset();
@@ -234,13 +254,13 @@ impl Game {
             moves = map.get_possible_palyer_moves(player);
             rounds += 1;
             if !moves.is_empty() {
-                if let Tile::Empty = map.grid[player.y][player.x] {
+                if let Tile::Empty = map.get_tile(player.x, player.y) {
                     // add current position to simulate no move
                     moves.push(*player);
                 }
                 break;
             }
-            if let Tile::Blizzard(_) = &map.grid[player.y][player.x] {
+            if let Tile::Blizzard(_) = &map.get_tile(player.x, player.y) {
                 //println!("blizzard moved to the player field");
                 return None;
             }
@@ -249,7 +269,7 @@ impl Game {
     }
 
     fn play_bfs(&mut self, player: &Pos, to: &Pos) -> i32 {
-        let lcm = (self.map.grid.len() - 2).lcm(&(self.map.grid[0].len() - 2)) as i32;
+        let lcm = (self.map.height - 2).lcm(&(&self.map.width - 2)) as i32;
         let mut visited: HashSet<(Pos, i32)> = HashSet::new();
         let mut next_moves: VecDeque<GameState> = VecDeque::new();
         next_moves.push_back(GameState::new(self.map.clone(), 0, *player));
