@@ -5,7 +5,7 @@ use std::{
 };
 
 use derive_more::Constructor;
-#[derive(Debug, Default, Constructor, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, Default, Constructor, PartialEq, Eq, Hash, Clone, Copy)]
 struct Pos {
     row: usize,
     column: usize,
@@ -85,14 +85,14 @@ impl Map {
     fn bfs(&self, start: &Pos) -> Option<usize> {
         let mut visited: HashSet<Pos> = HashSet::new();
         let mut q: VecDeque<(Pos, usize)> = VecDeque::new();
-        q.push_back((start.clone(), 0));
+        q.push_back((*start, 0));
 
         loop {
             if q.is_empty() {
                 return None;
             }
             let p = q.pop_front().unwrap();
-            if !visited.insert(p.0.clone()) {
+            if !visited.insert(p.0) {
                 continue;
             }
             if p.0 == self.end {
