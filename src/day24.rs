@@ -189,7 +189,7 @@ impl Map {
     }
 
     fn get_possible_palyer_moves(&self, p: &Pos) -> SmallVec<[Pos; 8]> {
-        [(-1, 0), (0, -1), (1, 0), (0, 1)]
+        [(0,0), (-1, 0), (0, -1), (1, 0), (0, 1)]
             .iter()
             .map(|v| p.add(*v))
             .filter(|np| {
@@ -256,10 +256,6 @@ impl Game {
             moves = map.get_possible_palyer_moves(player);
             rounds += 1;
             if !moves.is_empty() {
-                if let Tile::Empty = map.get_tile(player.x, player.y) {
-                    // add current position to simulate no move
-                    moves.push(*player);
-                }
                 break;
             }
             if let Tile::Blizzard(_) = &map.get_tile(player.x, player.y) {
@@ -284,10 +280,9 @@ impl Game {
                 self.map = gs.map;
                 return gs.round;
             }
-            if visited.contains(&(gs.player, gs.round % lcm)) {
+            if !visited.insert((gs.player, gs.round % lcm)) {
                 continue;
             }
-            visited.insert((gs.player, gs.round % lcm));
 
             if let Some((moves, wait_rounds)) =
                 Self::wait_until_move_is_possible(&mut gs.map, &mut self.scratch_map, &self.reset_map, &gs.player)
