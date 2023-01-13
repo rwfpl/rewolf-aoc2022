@@ -206,6 +206,7 @@ impl Map {
 struct Game {
     map: Map,
     scratch_map: Map,
+    reset_map: Map,
 }
 
 #[derive(Debug, Constructor, PartialEq, Eq)]
@@ -219,10 +220,10 @@ impl Game {
     fn new(map: Map) -> Self {
         let mut scratch_map = map.clone();
         scratch_map.reset();
-        Game { scratch_map, map }
+        Game { scratch_map: scratch_map.clone(), map, reset_map:scratch_map }
     }
 
-    fn advance_blizzards(map: &mut Map, scratch_map: &mut Map) {
+    fn advance_blizzards(map: &mut Map, scratch_map: &mut Map, reset_map: &Map) {
         map.grid.iter().enumerate().for_each(|(index, t)| {
             if let Tile::Blizzard(dirs) = t {
                 dirs.iter().for_each(|d| {
@@ -239,18 +240,19 @@ impl Game {
             }
         });
         std::mem::swap(map, scratch_map);
-        scratch_map.reset();
+        scratch_map.clone_from(reset_map);
     }
 
     fn wait_until_move_is_possible(
         map: &mut Map,
         scratch_map: &mut Map,
+        reset_map: &Map,
         player: &Pos,
     ) -> Option<(SmallVec<[Pos; 8]>, i32)> {
         let mut rounds = 0;
         let mut moves;
         loop {
-            Self::advance_blizzards(map, scratch_map);
+            Self::advance_blizzards(map, scratch_map, reset_map);
             moves = map.get_possible_palyer_moves(player);
             rounds += 1;
             if !moves.is_empty() {
@@ -288,7 +290,7 @@ impl Game {
             visited.insert((gs.player, gs.round % lcm));
 
             if let Some((moves, wait_rounds)) =
-                Self::wait_until_move_is_possible(&mut gs.map, &mut self.scratch_map, &gs.player)
+                Self::wait_until_move_is_possible(&mut gs.map, &mut self.scratch_map, &self.reset_map, &gs.player)
             {
                 next_moves.extend(
                     moves
