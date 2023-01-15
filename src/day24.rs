@@ -72,13 +72,12 @@ impl Add<(i32, i32)> for Pos {
     type Output = Option<Self>;
 
     fn add(self, other: (i32, i32)) -> Option<Self> {
-        if self.x as i32 + other.0 < 0 || self.y as i32 + other.1 < 0 {
+        let x = self.x as i32 + other.0;
+        let y = self.y as i32 + other.1;
+        if x < 0 || y < 0 {
             None
         } else {
-            Some(Pos::new(
-                (self.x as i32 + other.0) as usize,
-                (self.y as i32 + other.1) as usize,
-            ))
+            Some(Pos::new(x as usize, y as usize))
         }
     }
 }
@@ -188,8 +187,8 @@ impl Map {
         }
     }
 
-    fn get_possible_palyer_moves(&self, p: &Pos) -> SmallVec<[Pos; 8]> {
-        [(0,0), (-1, 0), (0, -1), (1, 0), (0, 1)]
+    fn get_possible_palyer_moves(&self, p: &Pos) -> SmallVec<[Pos; 5]> {
+        [(0, 0), (-1, 0), (0, -1), (1, 0), (0, 1)]
             .iter()
             .map(|v| p.add(*v))
             .filter(|np| {
@@ -204,93 +203,97 @@ impl Map {
 
 #[derive(Debug)]
 struct Game {
-    map: Map,
-    scratch_map: Map,
-    reset_map: Map,
+    lcm: i32,
+    maps: Vec<Map>,
+    round: i32,
 }
 
 #[derive(Debug, Constructor, PartialEq, Eq)]
 struct GameState {
-    map: Map,
     round: i32,
     player: Pos,
 }
 
 impl Game {
     fn new(map: Map) -> Self {
-        let mut scratch_map = map.clone();
-        scratch_map.reset();
-        Game { scratch_map: scratch_map.clone(), map, reset_map:scratch_map }
+        let lcm = (map.height - 2).lcm(&(&map.width - 2)) as i32;
+        let mut reset_map = map.clone();
+        reset_map.reset();
+
+        let mut maps: Vec<Map> = Vec::with_capacity(lcm as usize);
+        let mut map = map;
+        for _ in 0..lcm {
+            let next_map = Self::next_blizzard_map(&map, &reset_map);
+            maps.push(map);
+            map = next_map;
+        }
+
+        Game {
+            lcm,
+            maps,
+            round: 0,
+        }
     }
 
-    fn advance_blizzards(map: &mut Map, scratch_map: &mut Map, reset_map: &Map) {
+    fn next_blizzard_map(map: &Map, reset_map: &Map) -> Map {
+        let mut r = reset_map.clone();
         map.grid.iter().enumerate().for_each(|(index, t)| {
             if let Tile::Blizzard(dirs) = t {
                 dirs.iter().for_each(|d| {
                     let p = map.index_to_pos(index);
                     let new_pos = map.advance_blizzard(&p, d);
-                    if let Tile::Blizzard(b) = scratch_map.get_tile_mut(new_pos.x, new_pos.y)
-                    {
+                    if let Tile::Blizzard(b) = r.get_tile_mut(new_pos.x, new_pos.y) {
                         b.push(*d);
                     } else {
-                        *scratch_map.get_tile_mut(new_pos.x, new_pos.y) =
-                            Tile::Blizzard(smallvec![*d; 1]);
+                        *r.get_tile_mut(new_pos.x, new_pos.y) = Tile::Blizzard(smallvec![*d; 1]);
                     }
                 });
             }
         });
-        std::mem::swap(map, scratch_map);
-        scratch_map.clone_from(reset_map);
+        r
     }
 
-    fn wait_until_move_is_possible(
-        map: &mut Map,
-        scratch_map: &mut Map,
-        reset_map: &Map,
-        player: &Pos,
-    ) -> Option<(SmallVec<[Pos; 8]>, i32)> {
+    fn wait_until_move_is_possible(&mut self, player: &Pos) -> Option<(SmallVec<[Pos; 5]>, i32)> {
         let mut rounds = 0;
-        let mut moves;
         loop {
-            Self::advance_blizzards(map, scratch_map, reset_map);
-            moves = map.get_possible_palyer_moves(player);
+            let moves =
+                self.maps[(self.round % self.lcm) as usize].get_possible_palyer_moves(player);
             rounds += 1;
             if !moves.is_empty() {
-                break;
+                return Some((moves, rounds));
             }
-            if let Tile::Blizzard(_) = &map.get_tile(player.x, player.y) {
+            if let Tile::Blizzard(_) =
+                &self.maps[(self.round % self.lcm) as usize].get_tile(player.x, player.y)
+            {
                 //println!("blizzard moved to the player field");
                 return None;
             }
+            self.round += 1;
         }
-        Some((moves, rounds))
     }
 
     fn play_bfs(&mut self, player: &Pos, to: &Pos) -> i32 {
-        let lcm = (self.map.height - 2).lcm(&(&self.map.width - 2)) as i32;
-        let mut visited: HashSet<(Pos, i32)> = HashSet::new();
-        let mut next_moves: VecDeque<GameState> = VecDeque::new();
-        next_moves.push_back(GameState::new(self.map.clone(), 0, *player));
+        let mut visited: HashSet<(Pos, i32)> = HashSet::with_capacity(256_000);
+        let mut next_moves: VecDeque<GameState> = VecDeque::with_capacity(4096);
+        next_moves.push_back(GameState::new(self.round, *player));
         loop {
             if next_moves.is_empty() {
                 panic!("couldn't find path between {player:?} and {to:?}");
             }
-            let mut gs = next_moves.pop_front().unwrap();
+            let gs = next_moves.pop_front().unwrap();
+            self.round = gs.round;
             if gs.player == *to {
-                self.map = gs.map;
-                return gs.round;
+                return gs.round - 1;
             }
-            if !visited.insert((gs.player, gs.round % lcm)) {
+            if !visited.insert((gs.player, gs.round % self.lcm)) {
                 continue;
             }
 
-            if let Some((moves, wait_rounds)) =
-                Self::wait_until_move_is_possible(&mut gs.map, &mut self.scratch_map, &self.reset_map, &gs.player)
-            {
+            if let Some((moves, wait_rounds)) = self.wait_until_move_is_possible(&gs.player) {
                 next_moves.extend(
                     moves
                         .into_iter()
-                        .map(|mv| GameState::new(gs.map.clone(), gs.round + wait_rounds, mv)),
+                        .map(|mv| GameState::new(gs.round + wait_rounds, mv)),
                 );
                 next_moves.make_contiguous().sort_by_key(|gs| gs.round);
             }
@@ -300,13 +303,11 @@ impl Game {
 
 fn solution(filename: &str) -> (i32, i32) {
     let mut game = Game::new(Map::from(fs::read_to_string(filename).unwrap().as_str()));
-    let from = game.map.get_entrance();
-    let to = game.map.get_exit();
+    let from = game.maps[0].get_entrance();
+    let to = game.maps[0].get_exit();
     let p1 = game.play_bfs(&from, &to);
-    (
-        p1,
-        p1 + game.play_bfs(&to, &from) + game.play_bfs(&from, &to),
-    )
+    game.play_bfs(&to, &from);
+    (p1, game.play_bfs(&from, &to))
 }
 
 pub fn run() {
