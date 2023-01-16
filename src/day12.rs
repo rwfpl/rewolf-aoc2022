@@ -51,42 +51,25 @@ impl Map {
     }
 
     fn can_move_up(&self, pos: &Pos) -> bool {
-        if pos.row > 0 {
-            self.can_move(pos, self.map[pos.row - 1][pos.column])
-        } else {
-            false
-        }
+        pos.row > 0 && self.can_move(pos, self.map[pos.row - 1][pos.column])
     }
 
     fn can_move_down(&self, pos: &Pos) -> bool {
-        if pos.row < self.map.len() - 1 {
-            self.can_move(pos, self.map[pos.row + 1][pos.column])
-        } else {
-            false
-        }
+        pos.row < self.map.len() - 1 && self.can_move(pos, self.map[pos.row + 1][pos.column])
     }
 
     fn can_move_left(&self, pos: &Pos) -> bool {
-        if pos.column > 0 {
-            self.can_move(pos, self.map[pos.row][pos.column - 1])
-        } else {
-            false
-        }
+        pos.column > 0 && self.can_move(pos, self.map[pos.row][pos.column - 1])
     }
 
     fn can_move_right(&self, pos: &Pos) -> bool {
-        if pos.column < self.map[0].len() - 1 {
-            self.can_move(pos, self.map[pos.row][pos.column + 1])
-        } else {
-            false
-        }
+        pos.column < self.map[0].len() - 1 && self.can_move(pos, self.map[pos.row][pos.column + 1])
     }
 
     fn bfs(&self, start: &Pos) -> Option<usize> {
-        let mut visited: HashSet<Pos> = HashSet::new();
-        let mut q: VecDeque<(Pos, usize)> = VecDeque::new();
+        let mut visited: HashSet<Pos> = HashSet::with_capacity(7000);
+        let mut q: VecDeque<(Pos, usize)> = VecDeque::with_capacity(256);
         q.push_back((*start, 0));
-
         loop {
             if q.is_empty() {
                 return None;
