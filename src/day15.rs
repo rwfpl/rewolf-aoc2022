@@ -2,6 +2,7 @@ extern crate derive_more;
 
 use derive_more::Constructor;
 use itertools::{sorted, Itertools};
+use rayon::prelude::*;
 use regex::Regex;
 use std::collections::HashSet;
 use std::fs;
@@ -109,12 +110,13 @@ fn solution(filename: &str, p1_row: i32) -> (usize, i64) {
         .collect();
     let p1 = get_row_coverage(p1_row, &sb, &sb.iter().map(|sb| &sb.beacon).collect());
 
-    for i in 0..4_000_000 {
-        if let Some(blind_row) = get_row_blind_spot(i, &sb) {
-            return (p1, blind_row as i64 * 4_000_000 + i as i64);
-        }
-    }
-    panic!("couldn't find p2 solution");
+    let p2 = (0..4_000_000)
+        .into_par_iter()
+        .find_map_any(|i| {
+            get_row_blind_spot(i, &sb).map(|blind_row| blind_row as i64 * 4_000_000 + i as i64)
+        })
+        .unwrap();
+    (p1, p2)
 }
 
 pub fn run() {
