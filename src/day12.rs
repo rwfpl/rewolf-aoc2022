@@ -1,4 +1,5 @@
 extern crate derive_more;
+use rayon::prelude::*;
 use std::{
     collections::{HashSet, VecDeque},
     fs,
@@ -102,10 +103,10 @@ fn solution(filename: &str) -> (usize, usize) {
     (
         map.bfs(&map.start).unwrap(),
         map.map
-            .iter()
+            .par_iter()
             .enumerate()
             .map(|(i, row)| {
-                row.iter()
+                row.par_iter()
                     .enumerate()
                     .filter(|(_, t)| t == &&b'a')
                     .map(|(j, _)| map.bfs(&Pos::new(i, j)).unwrap_or(usize::MAX))
