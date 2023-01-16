@@ -211,8 +211,8 @@ impl Game {
         loop {
             let elves = self.get_elves();
 
-            let mut proposed_moves: HashMap<Pos, Pos> = HashMap::new();
-            let mut proposed_pos_count: HashMap<Pos, i32> = HashMap::new();
+            let mut proposed_moves: HashMap<Pos, Pos> = HashMap::with_capacity(2048);
+            let mut proposed_pos_count: HashMap<Pos, i32> = HashMap::with_capacity(2048);
             elves
                 .filter(|elf| !self.no_other_elves_around(elf))
                 .for_each(|elf| {
