@@ -297,7 +297,6 @@ fn solution(filename: &str) -> (usize, usize) {
         30,
         0,
     );
-    println!("day16 p1: {p1}");
 
     let mut node_id_map = NODE_ID_MAP.lock().unwrap();
     let flow_rate_left = valves.iter().map(|valve| valve.flow_rate).sum();
@@ -307,12 +306,13 @@ fn solution(filename: &str) -> (usize, usize) {
         &Visitor::new(node_id_map.insert_or_get("AA"), 26, 0),
         flow_rate_left,
     );
-    println!("day16 p2: {}", p2.0 + p2.1);
+
     (p1, p2.0 + p2.1)
 }
 
-pub fn run() {
-    solution("src/inputs/aoc_16.input");
+pub fn run() -> (String, String) {
+    let (p1, p2) = solution("src/inputs/aoc_16.input");
+    (p1.to_string(), p2.to_string())
 }
 
 #[cfg(test)]

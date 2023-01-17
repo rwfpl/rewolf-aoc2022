@@ -53,8 +53,8 @@ fn solution(filename: &str) -> String {
     )
 }
 
-pub fn run() {
-    println!("day25 p1: {}", solution("src/inputs/aoc_25.input"));
+pub fn run() -> (String, String) {
+    (solution("src/inputs/aoc_25.input"), "".to_string())
 }
 
 #[cfg(test)]

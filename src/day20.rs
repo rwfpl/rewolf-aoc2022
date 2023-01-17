@@ -52,12 +52,11 @@ fn solution(filename: &str, decryption_key: i64, rounds: usize) -> i64 {
         + input[(zero_pos + 3000) % input.len()].v
 }
 
-pub fn run() {
-    println!("day20 p1: {}", solution("src/inputs/aoc_20.input", 1, 1));
-    println!(
-        "day20 p2: {}",
-        solution("src/inputs/aoc_20.input", 811589153, 10)
-    );
+pub fn run() -> (String, String) {
+    (
+        solution("src/inputs/aoc_20.input", 1, 1).to_string(),
+        solution("src/inputs/aoc_20.input", 811589153, 10).to_string(),
+    )
 }
 
 #[cfg(test)]

@@ -45,9 +45,8 @@ fn day3_p2() -> u64 {
         .sum()
 }
 
-pub fn run() {
-    println!("day3 p1: {}", day3_p1());
-    println!("day3 p2: {}", day3_p2());
+pub fn run() -> (String, String) {
+    (day3_p1().to_string(), day3_p2().to_string())
 }
 
 #[cfg(test)]

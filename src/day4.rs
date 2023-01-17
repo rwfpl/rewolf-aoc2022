@@ -32,9 +32,11 @@ where
         .count()
 }
 
-pub fn run() {
-    println!("day4 p1: {}", solution(contained));
-    println!("day4 p2: {}", solution(overlapped));
+pub fn run() -> (String, String) {
+    (
+        solution(contained).to_string(),
+        solution(overlapped).to_string(),
+    )
 }
 
 #[cfg(test)]

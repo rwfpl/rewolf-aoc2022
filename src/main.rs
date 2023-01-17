@@ -1,4 +1,5 @@
 #![feature(is_some_and)]
+use rayon::prelude::*;
 use std::env;
 use std::time::Instant;
 
@@ -63,11 +64,18 @@ fn main() {
         .parse::<usize>()
         .unwrap_or(0);
     match day {
-        1..=25 => days[day - 1](),
-        _ => days.iter().for_each(|day| {
+        1..=25 => {
+            let (p1, p2) = days[day - 1]();
+            println!("day{day} p1: {p1}\nday{day} p2: {p2}");
+        }
+        _ => days.par_iter().enumerate().for_each(|(i, day)| {
             let now = Instant::now();
-            day();
-            println!("execution time: {:?}", now.elapsed());
+            let (p1, p2) = day();
+            let day_n = i + 1;
+            println!(
+                "day{day_n} p1: {p1}\nday{day_n} p2: {p2}\nday{day_n} execution time: {:?}",
+                now.elapsed()
+            );
         }),
     }
     println!("total execution time: {:?}", now.elapsed());

@@ -19,10 +19,9 @@ fn solution() -> (i32, i32) {
     (*maxes.last().unwrap(), maxes.iter().rev().take(3).sum())
 }
 
-pub fn run() {
+pub fn run() -> (String, String) {
     let (p1, p2) = solution();
-    println!("day1 p1 {p1}");
-    println!("day1 p2: {p2}");
+    (p1.to_string(), p2.to_string())
 }
 
 #[cfg(test)]

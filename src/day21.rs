@@ -169,9 +169,11 @@ fn solution_p2(filename: &str) -> i64 {
     }
 }
 
-pub fn run() {
-    println!("day21 p1: {}", solution_p1("src/inputs/aoc_21.input"));
-    println!("day21 p2: {}", solution_p2("src/inputs/aoc_21.input"));
+pub fn run() -> (String, String) {
+    (
+        solution_p1("src/inputs/aoc_21.input").to_string(),
+        solution_p2("src/inputs/aoc_21.input").to_string(),
+    )
 }
 
 #[cfg(test)]

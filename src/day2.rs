@@ -62,9 +62,11 @@ where
         .sum()
 }
 
-pub fn run() {
-    println!("day2 p1: {}", solution(get_score_p1));
-    println!("day2 p2: {}", solution(get_score_p2));
+pub fn run() -> (String, String) {
+    (
+        solution(get_score_p1).to_string(),
+        solution(get_score_p2).to_string(),
+    )
 }
 
 #[cfg(test)]

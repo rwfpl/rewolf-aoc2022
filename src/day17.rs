@@ -243,15 +243,11 @@ fn solution(filename: &str, interval: usize, n: i64) -> usize {
     }
 }
 
-pub fn run() {
-    println!(
-        "day17 p1: {}",
-        solution("src/inputs/aoc_17.input", 341, 2022)
-    );
-    println!(
-        "day17 p1: {}",
-        solution("src/inputs/aoc_17.input", 341, 1_000_000_000_000)
-    );
+pub fn run() -> (String, String) {
+    (
+        solution("src/inputs/aoc_17.input", 341, 2022).to_string(),
+        solution("src/inputs/aoc_17.input", 341, 1_000_000_000_000).to_string(),
+    )
 }
 
 #[cfg(test)]

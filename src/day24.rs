@@ -310,10 +310,9 @@ fn solution(filename: &str) -> (i32, i32) {
     (p1, game.play_bfs(&from, &to))
 }
 
-pub fn run() {
+pub fn run() -> (String, String) {
     let (p1, p2) = solution("src/inputs/aoc_24.input");
-    println!("day24 p1: {p1}");
-    println!("day24 p2: {p2}");
+    (p1.to_string(), p2.to_string())
 }
 
 #[cfg(test)]

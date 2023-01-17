@@ -213,9 +213,11 @@ fn solution(filename: &str, abyss: bool) -> i32 {
     i
 }
 
-pub fn run() {
-    println!("day14 p1: {}", solution("src/inputs/aoc_14.input", true));
-    println!("day14 p2: {}", solution("src/inputs/aoc_14.input", false));
+pub fn run() -> (String, String) {
+    (
+        solution("src/inputs/aoc_14.input", true).to_string(),
+        solution("src/inputs/aoc_14.input", false).to_string(),
+    )
 }
 
 #[cfg(test)]

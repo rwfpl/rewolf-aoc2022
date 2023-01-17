@@ -59,10 +59,9 @@ fn solution(filename: &str) -> (i32, String) {
     (sum, crt_to_string(&crt))
 }
 
-pub fn run() {
+pub fn run() -> (String, String) {
     let (p1, p2) = solution("src/inputs/aoc_10.input");
-    println!("day10 p1: {p1}");
-    println!("day10 p1: {p2}");
+    (p1.to_string(), p2)
 }
 
 #[cfg(test)]

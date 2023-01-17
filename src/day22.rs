@@ -466,15 +466,11 @@ fn get_sample_teleports() -> Vec<Teleport> {
     ]
 }
 
-pub fn run() {
-    println!(
-        "day22 p1: {}",
-        solution("src/inputs/aoc_22.input", false, 50, &get_teleports())
-    );
-    println!(
-        "day22 p1: {}",
-        solution("src/inputs/aoc_22.input", true, 50, &get_teleports())
-    );
+pub fn run() -> (String, String) {
+    (
+        solution("src/inputs/aoc_22.input", false, 50, &get_teleports()).to_string(),
+        solution("src/inputs/aoc_22.input", true, 50, &get_teleports()).to_string(),
+    )
 }
 
 #[cfg(test)]

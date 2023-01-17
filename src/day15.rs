@@ -119,10 +119,9 @@ fn solution(filename: &str, p1_row: i32) -> (usize, i64) {
     (p1, p2)
 }
 
-pub fn run() {
+pub fn run() -> (String, String) {
     let (p1, p2) = solution("src/inputs/aoc_15.input", 2_000_000);
-    println!("day15 p1: {p1}");
-    println!("day15 p1: {p2}");
+    (p1.to_string(), p2.to_string())
 }
 
 #[cfg(test)]

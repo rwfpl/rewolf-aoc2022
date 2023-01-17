@@ -158,10 +158,9 @@ fn solution() -> (usize, usize) {
     (p1, p2)
 }
 
-pub fn run() {
+pub fn run() -> (String, String) {
     let (p1, p2) = solution();
-    println!("day7 p1: {p1}");
-    println!("day7 p2: {p2}");
+    (p1.to_string(), p2.to_string())
 }
 
 #[cfg(test)]

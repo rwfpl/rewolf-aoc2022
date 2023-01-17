@@ -55,9 +55,11 @@ fn solution(filename: &str, n: usize) -> usize {
     visited.len()
 }
 
-pub fn run() {
-    println!("day9 p1: {}", solution("src/inputs/aoc_9.input", 1));
-    println!("day2 p1: {}", solution("src/inputs/aoc_9.input", 9));
+pub fn run() -> (String, String) {
+    (
+        solution("src/inputs/aoc_9.input", 1).to_string(),
+        solution("src/inputs/aoc_9.input", 9).to_string(),
+    )
 }
 
 #[cfg(test)]

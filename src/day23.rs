@@ -267,10 +267,9 @@ fn solution(filename: &str) -> (i32, usize) {
     game.play(10)
 }
 
-pub fn run() {
+pub fn run() -> (String, String) {
     let (p1, p2) = solution("src/inputs/aoc_23.input");
-    println!("day23 p1: {p1}");
-    println!("day23 p2: {p2}");
+    (p1.to_string(), p2.to_string())
 }
 
 #[cfg(test)]

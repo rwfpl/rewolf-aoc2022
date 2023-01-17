@@ -125,10 +125,9 @@ fn solution(filename: &str) -> (usize, usize) {
     (get_visible_trees(&map), get_max_tree_score(&map))
 }
 
-pub fn run() {
+pub fn run() -> (String, String) {
     let (p1, p2) = solution("src/inputs/aoc_8.input");
-    println!("day8 p1: {p1}");
-    println!("day8 p2: {p2}");
+    (p1.to_string(), p2.to_string())
 }
 
 #[cfg(test)]

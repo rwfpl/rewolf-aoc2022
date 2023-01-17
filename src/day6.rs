@@ -12,9 +12,11 @@ fn solution(distinct: usize) -> Option<usize> {
         .next()
 }
 
-pub fn run() {
-    println!("day6 p1: {}", solution(4).unwrap());
-    println!("day6 p1: {}", solution(14).unwrap());
+pub fn run() -> (String, String) {
+    (
+        solution(4).unwrap().to_string(),
+        solution(14).unwrap().to_string(),
+    )
 }
 
 #[cfg(test)]

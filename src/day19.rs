@@ -220,9 +220,11 @@ fn solution_p2(filename: &str) -> i32 {
         .product::<i32>()
 }
 
-pub fn run() {
-    println!("day19 p1: {}", solution_p1("src/inputs/aoc_19.input"));
-    println!("day19 p2: {}", solution_p2("src/inputs/aoc_19.input"));
+pub fn run() -> (String, String) {
+    (
+        solution_p1("src/inputs/aoc_19.input").to_string(),
+        solution_p2("src/inputs/aoc_19.input").to_string(),
+    )
 }
 
 #[cfg(test)]

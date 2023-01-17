@@ -56,9 +56,8 @@ where
         .collect::<String>()
 }
 
-pub fn run() {
-    println!("day5 p1: {}", solution(part1));
-    println!("day5 p2: {}", solution(part2));
+pub fn run() -> (String, String) {
+    (solution(part1), solution(part2))
 }
 
 #[cfg(test)]

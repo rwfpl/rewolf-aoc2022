@@ -187,12 +187,11 @@ pub fn solution(filename: &str, rounds: i32, stress_relieve: i64) -> i64 {
         .product()
 }
 
-pub fn run() {
-    println!("day11 p1: {}", solution("src/inputs/aoc_11.input", 20, 3));
-    println!(
-        "day11 p2: {}",
-        solution("src/inputs/aoc_11.input", 10_000, 1)
-    );
+pub fn run() -> (String, String) {
+    (
+        solution("src/inputs/aoc_11.input", 20, 3).to_string(),
+        solution("src/inputs/aoc_11.input", 10_000, 1).to_string(),
+    )
 }
 
 #[cfg(test)]
