@@ -19,6 +19,9 @@ struct Blueprint {
     clay_robot: Robot,
     obsidian_robot: Robot,
     geode_robot: Robot,
+    max_ore: i32,
+    max_clay: i32,
+    max_obsidian: i32,
 }
 
 fn match_to_i32(m: &Option<regex::Match>) -> i32 {
@@ -27,20 +30,51 @@ fn match_to_i32(m: &Option<regex::Match>) -> i32 {
 
 impl From<regex::Captures<'_>> for Blueprint {
     fn from(capture: regex::Captures) -> Self {
+        let ore_robot = Robot::new(match_to_i32(&capture.name("ore_robot_cost_ore")), 0, 0);
+        let clay_robot = Robot::new(match_to_i32(&capture.name("clay_robot_cost_ore")), 0, 0);
+        let obsidian_robot = Robot::new(
+            match_to_i32(&capture.name("obsidian_robot_cost_ore")),
+            match_to_i32(&capture.name("obsidian_robot_cost_clay")),
+            0,
+        );
+        let geode_robot = Robot::new(
+            match_to_i32(&capture.name("geode_robot_cost_ore")),
+            0,
+            match_to_i32(&capture.name("geode_robot_cost_obsidian")),
+        );
         Blueprint {
             id: match_to_i32(&capture.name("id")),
-            ore_robot: Robot::new(match_to_i32(&capture.name("ore_robot_cost_ore")), 0, 0),
-            clay_robot: Robot::new(match_to_i32(&capture.name("clay_robot_cost_ore")), 0, 0),
-            obsidian_robot: Robot::new(
-                match_to_i32(&capture.name("obsidian_robot_cost_ore")),
-                match_to_i32(&capture.name("obsidian_robot_cost_clay")),
-                0,
-            ),
-            geode_robot: Robot::new(
-                match_to_i32(&capture.name("geode_robot_cost_ore")),
-                0,
-                match_to_i32(&capture.name("geode_robot_cost_obsidian")),
-            ),
+            max_ore: *[
+                ore_robot.ore_cost,
+                clay_robot.ore_cost,
+                obsidian_robot.ore_cost,
+                geode_robot.ore_cost,
+            ]
+            .iter()
+            .max()
+            .unwrap(),
+            max_clay: *[
+                ore_robot.clay_cost,
+                clay_robot.clay_cost,
+                obsidian_robot.clay_cost,
+                geode_robot.clay_cost,
+            ]
+            .iter()
+            .max()
+            .unwrap(),
+            max_obsidian: *[
+                ore_robot.obsidian_cost,
+                clay_robot.obsidian_cost,
+                obsidian_robot.obsidian_cost,
+                geode_robot.obsidian_cost,
+            ]
+            .iter()
+            .max()
+            .unwrap(),
+            ore_robot,
+            clay_robot,
+            obsidian_robot,
+            geode_robot,
         }
     }
 }
@@ -157,7 +191,7 @@ impl<'a> Mine<'a> {
             self.geode_robots -= 1;
             self.resources = rb;
         } else {
-            if new_obsidian {
+            if new_obsidian && self.resources.obsidian < (minutes - 1) * self.bp.max_obsidian {
                 self.build_obsidian_robot();
                 let m = self.run(minutes - 1);
                 if m > max {
@@ -166,7 +200,8 @@ impl<'a> Mine<'a> {
                 self.obsidian_robots -= 1;
                 self.resources = rb;
             }
-            if new_clay && self.resources.clay < 24 {
+            if new_clay && self.resources.clay < std::cmp::min(24, (minutes - 1) * self.bp.max_clay)
+            {
                 self.build_clay_robot();
                 let m = self.run(minutes - 1);
                 if m > max {
@@ -175,7 +210,7 @@ impl<'a> Mine<'a> {
                 self.clay_robots -= 1;
                 self.resources = rb;
             }
-            if new_ore && self.resources.ore < 9 {
+            if new_ore && self.resources.ore < std::cmp::min(9, (minutes - 1) * self.bp.max_ore) {
                 self.build_ore_robot();
                 let m = self.run(minutes - 1);
                 if m > max {
