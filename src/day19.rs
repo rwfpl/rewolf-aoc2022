@@ -86,7 +86,7 @@ impl<'a> Mine<'a> {
         }
     }
 
-    fn can_build_ore_robot(&mut self) -> bool {
+    fn can_build_ore_robot(&self) -> bool {
         self.bp.ore_robot.ore_cost <= self.resources.ore
     }
 
@@ -95,7 +95,7 @@ impl<'a> Mine<'a> {
         self.ore_robots += 1;
     }
 
-    fn can_build_clay_robot(&mut self) -> bool {
+    fn can_build_clay_robot(&self) -> bool {
         self.bp.clay_robot.ore_cost <= self.resources.ore
     }
 
@@ -104,7 +104,7 @@ impl<'a> Mine<'a> {
         self.clay_robots += 1;
     }
 
-    fn can_build_obsidian_robot(&mut self) -> bool {
+    fn can_build_obsidian_robot(&self) -> bool {
         let robot = &self.bp.obsidian_robot;
         robot.ore_cost <= self.resources.ore && robot.clay_cost <= self.resources.clay
     }
@@ -116,7 +116,7 @@ impl<'a> Mine<'a> {
         self.obsidian_robots += 1;
     }
 
-    fn can_build_geode_robot(&mut self) -> bool {
+    fn can_build_geode_robot(&self) -> bool {
         let robot = &self.bp.geode_robot;
         robot.ore_cost <= self.resources.ore && robot.obsidian_cost <= self.resources.obsidian
     }
