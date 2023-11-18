@@ -29,7 +29,7 @@ impl From<&str> for Packet {
                     }
                     i += 1;
                 }
-                v if ('0'..='9').contains(&v) => {
+                v if v.is_ascii_digit() => {
                     let ss = s.get(i..).unwrap();
                     let x_end = cmp::min(
                         ss.find(',').or(Some(ss.len())),
@@ -122,9 +122,8 @@ fn solution(filename: &str) -> (usize, usize) {
             pairs
                 .into_iter()
                 .flat_map(|p| [p.left, p.right])
-                .chain([packet_2.clone(), packet_6.clone()].into_iter()),
+                .chain([packet_2.clone(), packet_6.clone()]),
         )
-        .into_iter()
         .enumerate()
         .filter(|(_, p)| p == &packet_2 || p == &packet_6)
         .map(|(i, _)| i + 1)

@@ -137,10 +137,8 @@ impl Map {
 
         Map {
             grid: (0..height)
-                .into_iter()
                 .map(|y| {
                     (0..width)
-                        .into_iter()
                         .map(|x| {
                             if points.contains(&Point::new(x, y)) {
                                 'X'

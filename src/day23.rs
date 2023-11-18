@@ -81,7 +81,7 @@ impl Game {
                         .map(|iv| {
                             (0..map_width)
                                 .map(|_| Tile::Empty)
-                                .chain(iv.into_iter())
+                                .chain(iv)
                                 .chain((0..map_width).map(|_| Tile::Empty))
                                 .collect::<Vec<Tile>>()
                         })

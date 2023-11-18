@@ -7,12 +7,12 @@ edition = "2021"
 
 [dependencies]
 regex = "1"
-derive_more = "0.99.0"
-itertools = "0.10.5"
+derive_more = "0.99.17"
+itertools = "0.12.0"
 lazy_static = "1.4.0"
-smallvec = "1.10.0"
-rayon = "1.6.1"
-num = "0.4.0"
+smallvec = "1.11.2"
+rayon = "1.8.0"
+num = "0.4.1"
 
 [profile.dev]
 opt-level = 0

@@ -32,7 +32,7 @@ where
         .for_each(|line| {
             positions.iter().for_each(|pos| {
                 let x = line.chars().nth(*pos).unwrap();
-                if x != ' ' && ('A'..='Z').contains(&x) {
+                if x != ' ' && x.is_ascii_uppercase() {
                     stacks[(*pos - 1) / 4].push(x);
                 }
             });

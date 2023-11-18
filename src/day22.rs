@@ -408,7 +408,7 @@ fn solution(filename: &str, p2: bool, cube_size: usize, teleports: &[Teleport]) 
 
     let max_width = input
         .lines()
-        .filter(|l| !(l.is_empty() || ('0'..'9').contains(&l.chars().next().unwrap())))
+        .filter(|l| !(l.is_empty() || l.chars().next().unwrap().is_ascii_digit()))
         .map(|l| l.len())
         .max()
         .unwrap();
@@ -419,7 +419,7 @@ fn solution(filename: &str, p2: bool, cube_size: usize, teleports: &[Teleport]) 
                     .lines()
                     .chain(iter::once(" ".repeat(max_width).as_str())),
             )
-            .filter(|l| !(l.is_empty() || ('0'..'9').contains(&l.chars().next().unwrap())))
+            .filter(|l| !(l.is_empty() || l.chars().next().unwrap().is_ascii_digit()))
             .map(|l| {
                 " ".chars()
                     .chain(l.chars().chain(" ".repeat(max_width + 1 - l.len()).chars()))
